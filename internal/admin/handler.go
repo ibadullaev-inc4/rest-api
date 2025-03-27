@@ -1,4 +1,4 @@
-package user
+package admin
 
 import (
 	"net/http"
@@ -9,8 +9,8 @@ import (
 // var _ handlers.Handler = &handler{}
 
 const (
-	usersURL = "/users"
-	userURL  = "/users/:uuid"
+	usersURL = "/admins"
+	userURL  = "/admins/:uuid"
 )
 
 type handler struct {
@@ -31,26 +31,26 @@ func (h *handler) Register(router *httprouter.Router) {
 
 func (h *handler) GetList(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(200)
-	w.Write([]byte("this is list of users"))
+	w.Write([]byte("this is list of admins"))
 }
 
 func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(201)
-	w.Write([]byte("this is create the user"))
+	w.Write([]byte("this is create the admin"))
 }
 func (h *handler) GetUserByUUID(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(200)
-	w.Write([]byte("this is get the user"))
+	w.Write([]byte("this is get the admin"))
 }
 func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(204)
-	w.Write([]byte("this is update the user"))
+	w.Write([]byte("this is update the admin"))
 }
 func (h *handler) PartiallyUpdateUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(204)
-	w.Write([]byte("this is partially update the user"))
+	w.Write([]byte("this is partially update the admin"))
 }
 func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(204)
-	w.Write([]byte("this is delete the user"))
+	w.Write([]byte("this is delete the admin"))
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"rest-api/internal/admin"
 	"rest-api/internal/user"
 	"time"
 
@@ -16,8 +17,12 @@ func main() {
 	router := httprouter.New()
 
 	log.Println("register user handler")
-	handler := user.NewHandler()
-	handler.Register(router)
+	userHandler := user.NewHandler()
+	userHandler.Register(router)
+
+	log.Println("register admin handler")
+	adminHandler := admin.NewHandler()
+	adminHandler.Register(router)
 
 	start(router)
 
