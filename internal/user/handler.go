@@ -2,11 +2,12 @@ package user
 
 import (
 	"net/http"
+	"rest-api/internal/handlers"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-// var _ handlers.Handler = &handler{}
+var _ handlers.Handler = &handler{}
 
 const (
 	usersURL = "/users"
@@ -16,7 +17,7 @@ const (
 type handler struct {
 }
 
-func NewHandler() *handler {
+func NewHandler() handlers.Handler {
 	return &handler{}
 }
 
