@@ -28,8 +28,8 @@ func NewHandler(logger *logrus.Logger) handlers.Handler {
 
 func (h *handler) Register(router *httprouter.Router) {
 	router.GET(usersURL, metrics.PrometheusMiddleware(h.GetList, usersURL))
-	router.POST(usersURL, h.CreateUser)
-	router.GET(userURL, h.GetUserByUUID)
+	router.POST(usersURL, metrics.PrometheusMiddleware(h.CreateUser, usersURL))
+	router.GET(userURL, metrics.PrometheusMiddleware(h.GetUserByUUID, usersURL))
 	router.PUT(userURL, h.UpdateUser)
 	router.PATCH(userURL, h.PartiallyUpdateUser)
 	router.DELETE(userURL, h.DeleteUser)
