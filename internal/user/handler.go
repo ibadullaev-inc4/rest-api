@@ -5,6 +5,7 @@ import (
 	"rest-api/internal/handlers"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 )
 
 var _ handlers.Handler = &handler{}
@@ -15,10 +16,13 @@ const (
 )
 
 type handler struct {
+	logger *logrus.Logger
 }
 
-func NewHandler() handlers.Handler {
-	return &handler{}
+func NewHandler(logger *logrus.Logger) handlers.Handler {
+	return &handler{
+		logger: logger,
+	}
 }
 
 func (h *handler) Register(router *httprouter.Router) {
@@ -31,6 +35,7 @@ func (h *handler) Register(router *httprouter.Router) {
 }
 
 func (h *handler) GetList(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	h.logger.Info("GetList called for users")
 	w.WriteHeader(200)
 	w.Write([]byte("this is list of users"))
 }
