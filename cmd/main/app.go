@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"rest-api/internal/admin"
+	"rest-api/internal/config"
 	"rest-api/internal/user"
 	"rest-api/pkg/logging"
 	"time"
@@ -17,6 +19,8 @@ func main() {
 	logger.Info("create router")
 	router := httprouter.New()
 
+	cfg := config.GetConfig()
+
 	logger.Info("register user handler")
 	userHandler := user.NewHandler(logger)
 	userHandler.Register(router)
@@ -25,15 +29,16 @@ func main() {
 	adminHandler := admin.NewHandler()
 	adminHandler.Register(router)
 
-	start(router)
+	start(router, cfg)
 
 }
 
-func start(router *httprouter.Router) {
+func start(router *httprouter.Router, cfg *config.Config) {
 
 	logger := logging.GetLogger()
 	logger.Info("start application")
-	listenet, err := net.Listen("tcp", "0.0.0.0:8080")
+	listenaddress := fmt.Sprintf("%s:%s", cfg.Listen.Address, cfg.Listen.Port)
+	listenet, err := net.Listen(cfg.Listen.Type, listenaddress)
 	if err != nil {
 		panic(err)
 	}
@@ -44,6 +49,6 @@ func start(router *httprouter.Router) {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	logger.Info("application is listening on http://0.0.0.0:8080")
+	logger.Infof("application is listening on %s", listenaddress)
 	logger.Fatal(server.Serve(listenet))
 }
