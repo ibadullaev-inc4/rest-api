@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -28,6 +29,8 @@ func main() {
 	logger.Info("register admin handler")
 	adminHandler := admin.NewHandler()
 	adminHandler.Register(router)
+
+	router.Handler("GET", "/metrics", promhttp.Handler())
 
 	start(router, cfg)
 

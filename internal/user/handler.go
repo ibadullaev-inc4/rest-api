@@ -3,6 +3,7 @@ package user
 import (
 	"net/http"
 	"rest-api/internal/handlers"
+	"rest-api/pkg/metrics"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ func NewHandler(logger *logrus.Logger) handlers.Handler {
 }
 
 func (h *handler) Register(router *httprouter.Router) {
-	router.GET(usersURL, h.GetList)
+	router.GET(usersURL, metrics.PrometheusMiddleware(h.GetList, usersURL))
 	router.POST(usersURL, h.CreateUser)
 	router.GET(userURL, h.GetUserByUUID)
 	router.PUT(userURL, h.UpdateUser)
