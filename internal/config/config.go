@@ -14,6 +14,9 @@ type Config struct {
 		Address string `yaml:"address"`
 		Port    string `yaml:"port"`
 	} `yaml:"listen"`
+	Mongo struct {
+		URI string `yaml:"uri"`
+	} `yaml:"mongo"`
 }
 
 var instance *Config

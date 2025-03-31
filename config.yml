@@ -4,3 +4,5 @@ listen:
   type: tcp
   address: 0.0.0.0
   port: 8080 
+mongo:
+  uri: "mongodb+srv://narimanibadullaev:FiGLRIxJvE0QmZjs@rest-api.o11lds7.mongodb.net/?retryWrites=true&w=majority&appName=rest-api"

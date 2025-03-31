@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/json"
 	"net/http"
 	"rest-api/internal/handlers"
 	"rest-api/pkg/metrics"
@@ -17,12 +18,14 @@ const (
 )
 
 type handler struct {
-	logger *logrus.Logger
+	logger  *logrus.Logger
+	storage Storage
 }
 
-func NewHandler(logger *logrus.Logger) handlers.Handler {
+func NewHandler(logger *logrus.Logger, storage Storage) handlers.Handler {
 	return &handler{
-		logger: logger,
+		logger:  logger,
+		storage: storage,
 	}
 }
 
@@ -42,9 +45,20 @@ func (h *handler) GetList(w http.ResponseWriter, r *http.Request, params httprou
 }
 
 func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	w.WriteHeader(201)
-	w.Write([]byte("this is create the user"))
+	var user User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+	id, err := h.storage.Create(r.Context(), user)
+	if err != nil {
+		http.Error(w, "failed to create user", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"id": id})
 }
+
 func (h *handler) GetUserByUUID(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.WriteHeader(200)
 	w.Write([]byte("this is get the user"))

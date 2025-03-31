@@ -7,6 +7,7 @@ import (
 	"rest-api/internal/admin"
 	"rest-api/internal/config"
 	"rest-api/internal/user"
+	client "rest-api/internal/user/db"
 	"rest-api/pkg/logging"
 	"time"
 
@@ -23,7 +24,13 @@ func main() {
 	cfg := config.GetConfig()
 
 	logger.Info("register user handler")
-	userHandler := user.NewHandler(logger)
+
+	mongo, err := client.NewMongoClient(cfg.Mongo.URI)
+	if err != nil {
+		logger.Errorf("Can not connect to mongoDB %v", err)
+	}
+	NewMongoStorage := user.NewMongoStorage(mongo, "users", "user")
+	userHandler := user.NewHandler(logger, NewMongoStorage)
 	userHandler.Register(router)
 
 	logger.Info("register admin handler")
