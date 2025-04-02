@@ -17,7 +17,7 @@ type Config struct {
 	Mongo struct {
 		URI        string `yaml:"uri"`
 		Database   string `yaml:"database"`
-		Collection string `yaml:collection""`
+		Collection string `yaml:"collection"`
 	} `yaml:"mongo"`
 }
 
