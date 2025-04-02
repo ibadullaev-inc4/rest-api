@@ -15,7 +15,9 @@ type Config struct {
 		Port    string `yaml:"port"`
 	} `yaml:"listen"`
 	Mongo struct {
-		URI string `yaml:"uri"`
+		URI        string `yaml:"uri"`
+		Database   string `yaml:"database"`
+		Collection string `yaml:collection""`
 	} `yaml:"mongo"`
 }
 
