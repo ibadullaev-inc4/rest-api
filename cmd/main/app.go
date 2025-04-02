@@ -25,7 +25,7 @@ func main() {
 
 	logger.Info("register user handler")
 
-	mongo, err := client.NewMongoClient(cfg.Mongo.URI)
+	mongo, err := client.NewMongoClient(cfg.Mongo.URI, logger)
 	if err != nil {
 		logger.Errorf("Can not connect to mongoDB %v", err)
 	}
