@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		logger.Errorf("Can not connect to mongoDB %v", err)
 	}
-	NewMongoStorage := user.NewMongoStorage(mongo, "users", "user")
+	NewMongoStorage := user.NewMongoStorage(mongo, "users", "user", logger)
 	userHandler := user.NewHandler(logger, NewMongoStorage)
 	userHandler.Register(router)
 
