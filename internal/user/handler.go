@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"rest-api/internal/handlers"
+	"rest-api/internal/storage"
 	"rest-api/pkg/metrics"
 
 	"github.com/julienschmidt/httprouter"
@@ -21,10 +22,10 @@ const (
 
 type handler struct {
 	logger  *logrus.Logger
-	storage Storage
+	storage storage.Storage
 }
 
-func NewHandler(logger *logrus.Logger, storage Storage) handlers.Handler {
+func NewHandler(logger *logrus.Logger, storage storage.Storage) handlers.Handler {
 	return &handler{
 		logger:  logger,
 		storage: storage,
@@ -59,7 +60,7 @@ func (h *handler) GetList(w http.ResponseWriter, r *http.Request, params httprou
 }
 
 func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	var user User
+	var user storage.Client
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -103,7 +104,7 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request, params http
 	id := params.ByName("uuid")
 	h.logger.Infof("Attempting to update user with id: %s", id)
 
-	var user User
+	var user storage.Client
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		h.logger.Errorf("Invalid request body: %v", err)
 		http.Error(w, "invalid request body", http.StatusBadRequest)
@@ -130,7 +131,7 @@ func (h *handler) PartiallyUpdateUser(w http.ResponseWriter, r *http.Request, pa
 
 	id := params.ByName("uuid")
 
-	var user User
+	var user storage.Client
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		h.logger.Errorf("Invalid request body: %v", err)
 		http.Error(w, "invalid request body", http.StatusBadRequest)

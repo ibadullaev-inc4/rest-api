@@ -2,21 +2,13 @@ package user
 
 import (
 	"context"
+	"rest-api/internal/storage"
 
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-type Storage interface {
-	Create(ctx context.Context, user User) (string, error)
-	FindOne(ctx context.Context, id string) (User, error)
-	Update(ctx context.Context, user User) error
-	Delete(ctx context.Context, id string) error
-	GetAll(ctx context.Context) ([]User, error)
-	PartiallyUpdate(ctx context.Context, user User) error
-}
 
 type MongoStorage struct {
 	collection *mongo.Collection
@@ -31,7 +23,7 @@ func NewMongoStorage(client *mongo.Client, dbName, collectionName string, logger
 	}
 }
 
-func (s *MongoStorage) GetAll(ctx context.Context) ([]User, error) {
+func (s *MongoStorage) GetAll(ctx context.Context) ([]storage.Client, error) {
 	s.logger.Info("Fetching all users from the database")
 
 	cursor, err := s.collection.Find(ctx, bson.M{})
@@ -41,9 +33,9 @@ func (s *MongoStorage) GetAll(ctx context.Context) ([]User, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var users []User
+	var users []storage.Client
 	for cursor.Next(ctx) {
-		var user User
+		var user storage.Client
 		if err := cursor.Decode(&user); err != nil {
 			s.logger.Errorf("Failed to decode user: %v", err)
 			return nil, err
@@ -60,10 +52,10 @@ func (s *MongoStorage) GetAll(ctx context.Context) ([]User, error) {
 	return users, nil
 }
 
-func (s *MongoStorage) Create(ctx context.Context, user User) (string, error) {
-	s.logger.Infof("Creating a new user: %+v", user)
+func (s *MongoStorage) Create(ctx context.Context, client storage.Client) (string, error) {
+	s.logger.Infof("Creating a new user: %+v", client)
 
-	res, err := s.collection.InsertOne(ctx, user)
+	res, err := s.collection.InsertOne(ctx, client)
 	if err != nil {
 		s.logger.Errorf("Failed to insert user: %v", err)
 		return "", err
@@ -79,10 +71,10 @@ func (s *MongoStorage) Create(ctx context.Context, user User) (string, error) {
 	return id.Hex(), nil
 }
 
-func (s *MongoStorage) FindOne(ctx context.Context, id string) (User, error) {
+func (s *MongoStorage) FindOne(ctx context.Context, id string) (storage.Client, error) {
 	s.logger.Infof("Fetching user with ID: %s", id)
 
-	var user User
+	var user storage.Client
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		s.logger.Errorf("Invalid ObjectID format: %v", err)
@@ -103,10 +95,10 @@ func (s *MongoStorage) FindOne(ctx context.Context, id string) (User, error) {
 	return user, nil
 }
 
-func (s *MongoStorage) Update(ctx context.Context, user User) error {
-	s.logger.Infof("Updating user with ID: %s", user.ID)
+func (s *MongoStorage) Update(ctx context.Context, client storage.Client) error {
+	s.logger.Infof("Updating user with ID: %s", client.ID)
 
-	objectID, err := primitive.ObjectIDFromHex(user.ID)
+	objectID, err := primitive.ObjectIDFromHex(client.ID)
 	if err != nil {
 		s.logger.Errorf("Invalid ObjectID format: %v", err)
 		return err
@@ -116,9 +108,9 @@ func (s *MongoStorage) Update(ctx context.Context, user User) error {
 		ctx,
 		bson.M{"_id": objectID},
 		bson.M{"$set": bson.M{
-			"email":    user.Email,
-			"username": user.Username,
-			"password": user.PasswordHash,
+			"email":    client.Email,
+			"username": client.Username,
+			"password": client.PasswordHash,
 		}},
 	)
 	if err != nil {
@@ -130,24 +122,24 @@ func (s *MongoStorage) Update(ctx context.Context, user User) error {
 	return nil
 }
 
-func (s *MongoStorage) PartiallyUpdate(ctx context.Context, user User) error {
-	s.logger.Infof("Partially updating user with ID: %s", user.ID)
+func (s *MongoStorage) PartiallyUpdate(ctx context.Context, client storage.Client) error {
+	s.logger.Infof("Partially updating user with ID: %s", client.ID)
 
-	objectID, err := primitive.ObjectIDFromHex(user.ID)
+	objectID, err := primitive.ObjectIDFromHex(client.ID)
 	if err != nil {
 		s.logger.Errorf("Invalid ObjectID format: %v", err)
 		return err
 	}
 
 	updateFields := bson.M{}
-	if user.Email != "" {
-		updateFields["email"] = user.Email
+	if client.Email != "" {
+		updateFields["email"] = client.Email
 	}
-	if user.Username != "" {
-		updateFields["username"] = user.Username
+	if client.Username != "" {
+		updateFields["username"] = client.Username
 	}
-	if user.PasswordHash != "" {
-		updateFields["password"] = user.PasswordHash
+	if client.PasswordHash != "" {
+		updateFields["password"] = client.PasswordHash
 	}
 
 	result, err := s.collection.UpdateOne(
