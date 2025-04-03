@@ -10,6 +10,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -115,17 +116,83 @@ func (h *handler) GetUserByUUID(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request) error {
-	w.WriteHeader(204)
-	w.Write([]byte("this is update the admin"))
+	h.logger.Info("UpdateUser called for user")
+
+	params := httprouter.ParamsFromContext(r.Context())
+	id := params.ByName("uuid")
+
+	h.logger.Infof("Attempting to update user with id: %s", id)
+
+	var admin Admin
+	if err := json.NewDecoder(r.Body).Decode(&admin); err != nil {
+		h.logger.Errorf("Invalid request body: %v", err)
+		return apperror.NewError("invalid request body")
+	}
+
+	admin.ID = id
+	h.logger.Infof("User data to be updated: %+v", admin)
+
+	err := h.storage.Update(r.Context(), user.User(admin))
+	if err != nil {
+		h.logger.Errorf("Failed to update admin %s: %v", id, err)
+		return apperror.ErrInternalServer
+	}
+
+	h.logger.Info("User updated successfully")
+	w.WriteHeader(http.StatusNoContent)
+
 	return nil
 }
+
 func (h *handler) PartiallyUpdateUser(w http.ResponseWriter, r *http.Request) error {
-	w.WriteHeader(204)
-	w.Write([]byte("this is partially update the admin"))
+	h.logger.Info("PartiallyUpdateUser called for user")
+
+	params := httprouter.ParamsFromContext(r.Context())
+	id := params.ByName("uuid")
+
+	h.logger.Infof("Attempting to partially update user with id: %s", id)
+
+	var admin Admin
+	if err := json.NewDecoder(r.Body).Decode(&admin); err != nil {
+		h.logger.Errorf("Invalid request body: %v", err)
+		return apperror.NewError("invalid request body")
+	}
+
+	admin.ID = id
+	h.logger.Infof("User data to be partially updated: %+v", admin)
+
+	err := h.storage.PartiallyUpdate(r.Context(), user.User(admin))
+	if err != nil {
+		h.logger.Errorf("Failed to partially update admin %s: %v", id, err)
+		return apperror.ErrInternalServer
+	}
+
+	h.logger.Info("User partially updated successfully")
+	w.WriteHeader(http.StatusNoContent)
+
 	return nil
 }
+
 func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) error {
-	w.WriteHeader(204)
-	w.Write([]byte("this is delete the admin"))
+	id := httprouter.ParamsFromContext(r.Context()).ByName("uuid")
+	h.logger.Infof("Attempting to delete user with id: %s", id)
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		h.logger.Errorf("Invalid UUID format: %v", err)
+		return apperror.ErrInvalidUuidFormat
+	}
+
+	idString := objectID.Hex()
+
+	err = h.storage.Delete(r.Context(), idString)
+	if err != nil {
+		h.logger.Errorf("Failed to delete user %s: %v", id, err)
+		return apperror.ErrInternalServer
+	}
+
+	h.logger.Infof("User %s deleted successfully", id)
+	w.WriteHeader(http.StatusNoContent)
+
 	return nil
 }
