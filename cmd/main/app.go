@@ -34,7 +34,7 @@ func main() {
 	userHandler.Register(router)
 
 	logger.Info("register admin handler")
-	adminHandler := admin.NewHandler()
+	adminHandler := admin.NewHandler(logger, NewMongoStorage)
 	adminHandler.Register(router)
 
 	router.Handler("GET", "/metrics", promhttp.Handler())
